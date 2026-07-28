@@ -389,15 +389,32 @@ main {
   min-inline-size: 0 !important;
   max-inline-size: 100%;
   inline-size: 100%;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-align: left;
   -webkit-appearance: none;
   appearance: none;
 }
 
 #capture-time::-webkit-date-and-time-value,
 #capture-time::-webkit-datetime-edit {
+  display: block;
   min-width: 0;
   max-width: 100%;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+#capture-time::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+  text-align: left;
 }
 
 .control-panel input[type="number"] {
