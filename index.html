@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Plan planetary, lunar, and solar imaging field of view, angular size, phase, Earth-facing longitude, Galilean moon transits, and alt-az field rotation for a specific time and location."
+    />
+    <meta name="theme-color" content="#05080c" />
+    <meta property="og:title" content="Planetary Imaging Calculator" />
+    <meta
+      property="og:description"
+      content="A precise, location-aware field-of-view planner for planetary, lunar, and solar imaging."
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://brainbrian825.github.io/Astrophotography-FOV-Calculator/"
+    />
+    <title>Planetary Imaging Calculator</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./vendor/astronomy.browser.min.js"></script>
+    <script defer src="./assets/data/equipment.js"></script>
+    <script defer src="./assets/data/major-moons.js"></script>
+    <script defer src="./app.js"></script>
+  </head>
+  <body>
+    <main>
+      <header class="site-header" id="top">
+        <h1>Planetary Imaging Calculator</h1>
+      </header>
+
+      <div class="calculator-layout">
+        <aside class="control-panel" aria-label="Capture setup">
+          <section class="control-section">
+            <div class="section-heading">
+              <span>01</span>
+              <div>
+                <h2>Choose target &amp; observing time</h2>
+              </div>
+            </div>
+            <div class="target-control-grid">
+              <label for="planet">
+                Solar-system object
+                <select id="planet">
+                  <optgroup label="Sun &amp; Moon">
+                    <option value="Moon">Moon</option>
+                    <option value="Sun">Sun</option>
+                  </optgroup>
+                  <optgroup label="Planets">
+                    <option value="Mercury">Mercury</option>
+                    <option value="Venus">Venus</option>
+                    <option value="Mars">Mars</option>
+                    <option value="Jupiter" selected>Jupiter</option>
+                    <option value="Saturn">Saturn</option>
+                    <option value="Uranus">Uranus</option>
+                    <option value="Neptune">Neptune</option>
+                  </optgroup>
+                </select>
+              </label>
+              <label for="capture-time">
+                Planned capture
+                <input id="capture-time" type="datetime-local" step="1" />
+              </label>
+              <div class="location-control">
+                <label for="location">
+                  Observer location
+                  <select id="location">
+                    <option value="los-angeles" selected>Los Angeles, USA</option>
+                    <option value="london">London, UK</option>
+                    <option value="tokyo">Tokyo, Japan</option>
+                    <option value="sydney">Sydney, Australia</option>
+                    <option value="cape-town">Cape Town, South Africa</option>
+                    <option value="custom">Custom coordinates</option>
+                  </select>
+                </label>
+                <button class="secondary-button" id="use-location" type="button">
+                  Use device location
+                </button>
+              </div>
+              <fieldset>
+                <legend>Mount type</legend>
+                <div class="segmented">
+                  <label>
+                    <input type="radio" name="mount" value="altaz" checked />
+                    <span>Alt-az</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="mount" value="equatorial" />
+                    <span>Equatorial</span>
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+            <div class="time-control-strip">
+              <div class="time-scrubber-heading">
+                <span>Time progression</span>
+                <output id="time-scrubber-label">Capture time</output>
+              </div>
+              <input
+                id="time-scrubber"
+                type="range"
+                min="-10080"
+                max="10080"
+                step="any"
+                value="0"
+                aria-label="Time offset from planned capture, plus or minus seven days"
+              />
+              <div class="time-scrubber-controls">
+                <button id="time-minus" type="button" aria-label="Move back one hour">
+                  −1 h
+                </button>
+                <button id="time-play" type="button" aria-pressed="false">
+                  Play
+                </button>
+                <button id="time-plus" type="button" aria-label="Move forward one hour">
+                  +1 h
+                </button>
+                <label for="time-speed">
+                  Rate
+                  <select id="time-speed">
+                    <option value="1">1 min/sec</option>
+                    <option value="10">10 min/sec</option>
+                    <option value="60" selected>1 hour/sec</option>
+                    <option value="360">6 hours/sec</option>
+                  </select>
+                </label>
+              </div>
+              <div class="time-scrubber-scale" aria-hidden="true">
+                <span>−7 days</span><span>Anchor</span><span>+7 days</span>
+              </div>
+            </div>
+            <fieldset class="preview-layer-controls">
+              <legend>Preview layers</legend>
+              <label>
+                <input id="show-moons" type="checkbox" checked />
+                <span>Moons</span>
+              </label>
+              <label title="Labels are automatically hidden during playback">
+                <input id="show-moon-labels" type="checkbox" />
+                <span>Moon labels</span>
+              </label>
+            </fieldset>
+            <div class="coordinate-strip">
+              <label for="latitude">
+                Latitude
+                <span class="input-unit">
+                  <input
+                    id="latitude"
+                    type="number"
+                    min="-90"
+                    max="90"
+                    step="0.0001"
+                    value="34.0522"
+                  />
+                  <small>°</small>
+                </span>
+              </label>
+              <label for="longitude">
+                Longitude
+                <span class="input-unit">
+                  <input
+                    id="longitude"
+                    type="number"
+                    min="-180"
+                    max="180"
+                    step="0.0001"
+                    value="-118.2437"
+                  />
+                  <small>°</small>
+                </span>
+              </label>
+              <p class="location-status" id="location-status" role="status">
+                East-positive longitude
+              </p>
+            </div>
+          </section>
+
+          <div class="divider"></div>
+
+          <section class="control-section">
+            <div class="section-heading">
+              <span>02</span>
+              <div>
+                <h2>Choose imaging equipment</h2>
+                <p>Search a preset or edit any value manually.</p>
+              </div>
+            </div>
+            <div class="equipment-control-grid">
+              <label class="camera-control" for="camera">
+                Camera model
+                <input
+                  id="camera"
+                  type="text"
+                  list="camera-options"
+                  value="ZWO - ASI585MC/PRO"
+                  autocomplete="off"
+                />
+                <datalist id="camera-options"></datalist>
+              </label>
+              <label class="telescope-control" for="telescope">
+                Telescope model
+                <input
+                  id="telescope"
+                  type="text"
+                  list="telescope-options"
+                  value="Celestron - NexStar 8SE"
+                  autocomplete="off"
+                />
+                <datalist id="telescope-options"></datalist>
+              </label>
+              <label for="sensor-width">
+                Resolution width
+                <span class="input-unit">
+                  <input id="sensor-width" type="number" min="1" value="3840" />
+                  <small>px</small>
+                </span>
+              </label>
+              <label for="sensor-height">
+                Resolution height
+                <span class="input-unit">
+                  <input id="sensor-height" type="number" min="1" value="2160" />
+                  <small>px</small>
+                </span>
+              </label>
+              <label for="pixel-size">
+                Pixel size
+                <span class="input-unit">
+                  <input
+                    id="pixel-size"
+                    type="number"
+                    min="0.1"
+                    step="0.01"
+                    value="2.9"
+                  />
+                  <small>µm</small>
+                </span>
+              </label>
+              <label for="focal-length">
+                Telescope focal length
+                <span class="input-unit">
+                  <input
+                    id="focal-length"
+                    type="number"
+                    min="1"
+                    step="10"
+                    value="2032"
+                  />
+                  <small>mm</small>
+                </span>
+              </label>
+              <label for="optical-multiplier">
+                Barlow / flattener
+                <select id="optical-multiplier">
+                  <option value="0.63">0.63× reducer / flattener</option>
+                  <option value="0.7">0.70× reducer / flattener</option>
+                  <option value="0.8">0.80× reducer / flattener</option>
+                  <option value="0.85">0.85× reducer / flattener</option>
+                  <option value="1">1.00× none</option>
+                  <option value="1.5">1.50× Barlow</option>
+                  <option value="2" selected>2.00× Barlow</option>
+                  <option value="2.5">2.50× Barlow</option>
+                  <option value="3">3.00× Barlow</option>
+                  <option value="5">5.00× Barlow</option>
+                  <option value="custom">Custom multiplier…</option>
+                </select>
+              </label>
+              <label for="sensor-angle">
+                Camera rotation
+                <span class="input-unit">
+                  <input
+                    id="sensor-angle"
+                    type="number"
+                    min="-180"
+                    max="180"
+                    step="0.1"
+                    value="0"
+                  />
+                  <small>°</small>
+                </span>
+                <em id="sensor-angle-reference">
+                  Clockwise from zenith-up
+                </em>
+              </label>
+              <label
+                class="custom-multiplier"
+                id="custom-multiplier-wrap"
+                for="custom-multiplier"
+                hidden
+              >
+                Custom multiplier
+                <span class="input-unit">
+                  <input
+                    id="custom-multiplier"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value="1"
+                  />
+                  <small>×</small>
+                </span>
+              </label>
+              <p class="effective-focal">
+                Effective focal length
+                <strong id="effective-focal">4,064 mm</strong>
+              </p>
+              <p class="equipment-database-note" id="equipment-database-note">
+                379 cameras · 929 telescopes
+              </p>
+            </div>
+          </section>
+        </aside>
+
+        <section class="results-panel" id="results" aria-live="polite">
+          <div class="error-card pending-card" role="status">
+            <span>Loading calculator</span>
+            <p>Calculating the selected view…</p>
+          </div>
+        </section>
+      </div>
+
+      <footer>
+        <p>
+          Ephemerides by
+          <a
+            href="https://github.com/cosinekitty/astronomy"
+            target="_blank"
+            rel="noreferrer"
+            >Astronomy Engine</a
+          >
+          and
+          <a
+            href="https://ssd.jpl.nasa.gov/horizons/"
+            target="_blank"
+            rel="noreferrer"
+            >NASA/JPL Horizons</a
+          >. Equipment presets are community-sourced and should be checked
+          against current manufacturer specifications.
+        </p>
+      </footer>
+    </main>
+    <noscript>
+      <p class="noscript">This calculator needs JavaScript enabled.</p>
+    </noscript>
+  </body>
+</html>

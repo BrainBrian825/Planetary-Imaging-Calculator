@@ -1,98 +1,78 @@
-# vinext-starter
+# Planetary Imaging Calculator
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+A responsive, static planetary imaging field-of-view calculator. It runs entirely
+in the browser and is ready for GitHub Pages.
 
-## Prerequisites
+Features include:
 
-- Node.js `>=22.13.0`
+- Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, and Neptune
+- date-, time-, distance-, and location-aware angular size and visibility
+- searchable local catalogs with 379 camera and 929 telescope presets, plus
+  fully editable sensor and focal-length values
+- separate telescope focal length and Barlow/reducer multiplier controls
+- a ±7-day time scrubber with one-hour step buttons and smooth elapsed-time
+  playback rates from one simulated minute to six simulated hours per second
+- hemisphere-, location-, time-, and mount-aware frame orientation: alt-az
+  previews follow the local vertical while equatorial previews follow celestial
+  north
+- manual camera rotation offset with the planet, phase, rings, and Galilean
+  moons transformed together into sensor coordinates
+- calculated effective focal length, image scale, FOV, and planet diameter in pixels
+- light-time-corrected central longitude, sub-Earth latitude, pole position angle,
+  and illuminated phase
+- predicted phases for every applicable target, including the Moon, Mercury,
+  and Venus
+- orthographic 3D map projection for the calculated Earth-facing side of the
+  Moon, Sun, Mercury, Mars, Jupiter, Saturn, Uranus, and Neptune
+- light-time-corrected positions for major moons of Mars, Jupiter, Saturn,
+  Uranus, and Neptune, with true-scale preview placement
+- collision-managed moon labels that retain a constant visual size, plus
+  independent preview switches for moon markers and labels
+- Galilean moon transits and the next predicted Jupiter moon transit
+- alt-az field-rotation rate and conservative imaging windows
+- a responsive, Stellarium-inspired sky-atlas interface
+- a screenshot-inspired equipment-first layout with a large sensor-frame view
+- a distraction-free black FOV workspace with a single sensor rectangle
+- a procedural phase-aware cloud sphere for Venus, whose visible cloud deck is
+  broadly uniform
+- a layered Saturn model with a Hubble-mapped globe and a separate
+  3072-pixel Cassini-derived ring texture rendered in front of and behind the
+  planet
+- locally bundled, credited NASA/USGS mission imagery and global maps
 
-## Quick Start
+## Publish with GitHub Pages
+
+1. Push this repository to GitHub.
+2. Open the repository’s **Settings → Pages**.
+3. Under **Build and deployment**, choose **Deploy from a branch**.
+4. Select your publishing branch (usually `main`) and the `/ (root)` folder.
+5. Save. GitHub will provide the public Pages URL after deployment finishes.
+
+No build command, server, API key, or environment variable is required.
+
+## Run locally
+
+Opening `index.html` directly works, including the calculated surface
+projections. For device-location permission and the closest match to GitHub
+Pages, serve the folder locally:
 
 ```bash
-npm install
-npm run dev
-npm run build
+python3 -m http.server 8000
 ```
 
-This starter does not use `wrangler.jsonc`.
+Then open `http://localhost:8000`.
 
-## Included Shape
+## Files
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+- `index.html` — accessible page structure and controls
+- `styles.css` — responsive layout and planet visualization
+- `app.js` — FOV, ephemeris, orientation, and field-rotation calculations
+- `assets/maps/` — locally bundled global texture maps used by the preview
+- `assets/maps/embedded/` — lazy direct-file fallbacks for browser canvas security
+- `assets/planets/` — locally bundled source images and attribution notes
+- `assets/data/` — local equipment catalogs and sampled JPL moon ephemerides
+- `vendor/astronomy.browser.min.js` — vendored Astronomy Engine runtime
 
-## Workspace Auth Headers
-
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+The calculator uses Astronomy Engine’s compact VSOP87/NOVAS-based ephemerides,
+IAU rotational elements, and locally sampled NASA/JPL Horizons satellite
+vectors. It is intended for observation planning, not spacecraft navigation.
