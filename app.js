@@ -1510,10 +1510,7 @@
         </div>
       `
         : "";
-    const systemLabel =
-      data.planetKey === "Jupiter"
-        ? "Galilean & inner moons"
-        : `${data.planetKey} moons`;
+    const systemLabel = `${data.planetKey} moons`;
     const modelNote = data.limited
       ? " · outside sampled 2020–2041 interval"
       : "";
@@ -1901,6 +1898,7 @@
           : "";
 
       elements.timeControls.remove();
+      elements.layerControls.remove();
       elements.results.innerHTML = `
         <div class="workspace-grid">
           <article class="preview-card">
@@ -2132,18 +2130,19 @@
       `;
       elements.results
         .querySelector(".fov-viewport")
-        .after(elements.timeControls);
+        .after(elements.layerControls, elements.timeControls);
       paintMappedGlobe(result, version);
       requestAnimationFrame(layoutMoonLabels);
     } catch (error) {
       elements.timeControls.remove();
+      elements.layerControls.remove();
       elements.results.innerHTML = `
         <div class="error-card">
           <span>Check your setup</span>
           <p>${error instanceof Error ? error.message : "Unable to calculate."}</p>
         </div>
       `;
-      elements.results.append(elements.timeControls);
+      elements.results.append(elements.layerControls, elements.timeControls);
     }
   }
 
@@ -2350,6 +2349,7 @@
       planet: getElement("planet"),
       captureTime: getElement("capture-time"),
       timeControls: getElement("time-controls"),
+      layerControls: getElement("preview-layer-controls"),
       timeScrubber: getElement("time-scrubber"),
       timeScrubberLabel: getElement("time-scrubber-label"),
       timeMinus: getElement("time-minus"),

@@ -278,6 +278,13 @@ main {
   margin: 10px 0 0;
 }
 
+.preview-card > .preview-layer-controls {
+  margin: 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  background: #070708;
+}
+
 .preview-layer-controls legend {
   float: left;
   margin-right: 4px;
