@@ -1900,6 +1900,7 @@
           `
           : "";
 
+      elements.timeControls.remove();
       elements.results.innerHTML = `
         <div class="workspace-grid">
           <article class="preview-card">
@@ -2129,15 +2130,20 @@
         </div>
         ${moonCard}
       `;
+      elements.results
+        .querySelector(".fov-viewport")
+        .after(elements.timeControls);
       paintMappedGlobe(result, version);
       requestAnimationFrame(layoutMoonLabels);
     } catch (error) {
+      elements.timeControls.remove();
       elements.results.innerHTML = `
         <div class="error-card">
           <span>Check your setup</span>
           <p>${error instanceof Error ? error.message : "Unable to calculate."}</p>
         </div>
       `;
+      elements.results.append(elements.timeControls);
     }
   }
 
@@ -2343,6 +2349,7 @@
     Object.assign(elements, {
       planet: getElement("planet"),
       captureTime: getElement("capture-time"),
+      timeControls: getElement("time-controls"),
       timeScrubber: getElement("time-scrubber"),
       timeScrubberLabel: getElement("time-scrubber-label"),
       timeMinus: getElement("time-minus"),
