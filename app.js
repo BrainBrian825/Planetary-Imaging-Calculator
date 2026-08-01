@@ -1065,7 +1065,7 @@
     const sampled = projectSampledMoons(planetKey, date);
     let moons = sampled.moons;
     let nextTransit;
-    const animating = Boolean(playbackTimer);
+    const animating = playbackTimer !== undefined;
 
     if (planetKey === "Jupiter") {
       const galileanMoons = projectJupiterMoons(date);
@@ -2221,7 +2221,7 @@
   }
 
   function stopPlayback() {
-    if (playbackTimer) {
+    if (playbackTimer !== undefined) {
       window.cancelAnimationFrame(playbackTimer);
       playbackTimer = undefined;
     }
@@ -2269,7 +2269,7 @@
   }
 
   function togglePlayback() {
-    if (playbackTimer) {
+    if (playbackTimer !== undefined) {
       stopPlayback();
       render();
       return;
@@ -2280,8 +2280,22 @@
     playbackTimer = window.requestAnimationFrame(advancePlayback);
   }
 
+  function handlePlayPointerDown(event) {
+    if (!event.isPrimary) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    event.preventDefault();
+    elements.timePlay.focus({ preventScroll: true });
+    togglePlayback();
+  }
+
+  function handlePlayClick(event) {
+    // Pointer activation is handled before an animated render can detach the
+    // button. A zero-detail click is keyboard or assistive-tech activation.
+    if (event.detail === 0) togglePlayback();
+  }
+
   function advancePlayback(timestamp) {
-    if (!playbackTimer) return;
+    if (playbackTimer === undefined) return;
     if (playbackLastTimestamp === undefined) {
       playbackLastTimestamp = timestamp;
       playbackLastRender = timestamp - 100;
@@ -2394,7 +2408,8 @@
     });
     elements.timeMinus.addEventListener("click", () => shiftTime(-60));
     elements.timePlus.addEventListener("click", () => shiftTime(60));
-    elements.timePlay.addEventListener("click", togglePlayback);
+    elements.timePlay.addEventListener("pointerdown", handlePlayPointerDown);
+    elements.timePlay.addEventListener("click", handlePlayClick);
     elements.showMoons.addEventListener("change", () => {
       elements.showMoonLabels.disabled = !elements.showMoons.checked;
       render();
