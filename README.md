@@ -3,6 +3,20 @@
 A responsive, static planetary imaging field-of-view calculator. It runs entirely
 in the browser and is ready for GitHub Pages.
 
+## Site pages
+
+- [`index.html`](index.html): technical overview of the FOV calculator and Planetary Studio's capture, preparation, stacking, and sharpening pipeline.
+- [`calculator.html`](calculator.html): the original interactive calculator, using the existing `app.js`, equipment data, maps, and `styles.css`.
+- [`downloads.html`](downloads.html): official Planetary Studio download page, with direct platform packages, installation requirements, SHA-256 checksums, and links to older releases and source on GitHub.
+
+All three pages share the top navigation. `site-pages.css` extends the existing calculator palette and panel styling for the informational pages and navigation. No build step or server-side runtime is required; serve the repository root as static files. The home and download pages also work without JavaScript.
+
+The download page currently presents version 0.5.4 (prerelease), verified against the published GitHub release metadata. When promoting another release, update the displayed version/date, platform requirements, all four package URLs and sizes, SHA-256 values, and release-notes link together. Keep the link to the complete release history for older versions. Downloads remain hosted in the Planetary Studio repository rather than duplicated in this website.
+
+Production: <https://planetary.brianfeuerman.com/>
+
+## Calculator features
+
 Features include:
 
 - Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, and Neptune

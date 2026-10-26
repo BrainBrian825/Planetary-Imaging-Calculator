@@ -3,345 +3,129 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="Plan planetary, lunar, and solar imaging field of view, angular size, phase, Earth-facing longitude, Galilean moon transits, and alt-az field rotation for a specific time and location."
-    />
+    <meta name="description" content="Technical overview of the planetary FOV calculator and Planetary Studio: observing geometry, raw capture, calibration, local alignment, stacking, wavelet sharpening, and validation." />
     <meta name="theme-color" content="#05080c" />
-    <meta property="og:title" content="Planetary Imaging Calculator" />
-    <meta
-      property="og:description"
-      content="A precise, location-aware field-of-view planner for planetary, lunar, and solar imaging."
-    />
+    <meta property="og:title" content="Planetary Imaging — Planning and Processing" />
+    <meta property="og:description" content="Technical overview of the planetary FOV calculator and Planetary Studio: observing geometry, raw capture, calibration, local alignment, stacking, wavelet sharpening, and validation." />
     <meta property="og:type" content="website" />
-    <meta
-      property="og:url"
-      content="https://brainbrian825.github.io/Astrophotography-FOV-Calculator/"
-    />
-    <title>Planetary Imaging Calculator</title>
+    <meta property="og:url" content="https://planetary.brianfeuerman.com/" />
+    <title>Planetary Imaging — Planning and Processing</title>
+    <link rel="canonical" href="https://planetary.brianfeuerman.com/" />
+    <link rel="icon" type="image/png" href="./assets/planetary-studio.png" />
     <link rel="stylesheet" href="./styles.css" />
-    <script defer src="./vendor/astronomy.browser.min.js"></script>
-    <script defer src="./assets/data/equipment.js"></script>
-    <script defer src="./assets/data/major-moons.js"></script>
-    <script defer src="./app.js"></script>
+    <link rel="stylesheet" href="./site-pages.css" />
   </head>
   <body>
+    <a class="skip-link" href="#content">Skip to content</a>
     <main>
       <header class="site-header" id="top">
-        <h1>Planetary Imaging Calculator</h1>
+        <h1>Planetary Imaging</h1>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="./index.html" aria-current="page">Home</a>
+          <a href="./calculator.html">Calculator</a>
+          <a href="./downloads.html">Downloads</a>
+        </nav>
       </header>
-
-      <div class="calculator-layout">
-        <aside class="control-panel" aria-label="Capture setup">
-          <section class="control-section">
-            <div class="section-heading">
-              <span>01</span>
-              <div>
-                <h2>Choose target &amp; observing time</h2>
-              </div>
-            </div>
-            <div class="target-control-grid">
-              <label for="planet">
-                Solar-system object
-                <select id="planet">
-                  <optgroup label="Sun &amp; Moon">
-                    <option value="Moon">Moon</option>
-                    <option value="Sun">Sun</option>
-                  </optgroup>
-                  <optgroup label="Planets">
-                    <option value="Mercury">Mercury</option>
-                    <option value="Venus">Venus</option>
-                    <option value="Mars">Mars</option>
-                    <option value="Jupiter" selected>Jupiter</option>
-                    <option value="Saturn">Saturn</option>
-                    <option value="Uranus">Uranus</option>
-                    <option value="Neptune">Neptune</option>
-                  </optgroup>
-                </select>
-              </label>
-              <label for="capture-time">
-                Planned capture
-                <input id="capture-time" type="datetime-local" step="1" />
-              </label>
-              <div class="location-control">
-                <label for="location">
-                  Observer location
-                  <select id="location">
-                    <option value="los-angeles" selected>Los Angeles, USA</option>
-                    <option value="london">London, UK</option>
-                    <option value="tokyo">Tokyo, Japan</option>
-                    <option value="sydney">Sydney, Australia</option>
-                    <option value="cape-town">Cape Town, South Africa</option>
-                    <option value="custom">Custom coordinates</option>
-                  </select>
-                </label>
-                <button class="secondary-button" id="use-location" type="button">
-                  Use device location
-                </button>
-              </div>
-              <fieldset>
-                <legend>Mount type</legend>
-                <div class="segmented">
-                  <label>
-                    <input type="radio" name="mount" value="altaz" checked />
-                    <span>Alt-az</span>
-                  </label>
-                  <label>
-                    <input type="radio" name="mount" value="equatorial" />
-                    <span>Equatorial</span>
-                  </label>
-                </div>
-              </fieldset>
-            </div>
-            <div class="time-control-strip" id="time-controls">
-              <div class="time-scrubber-heading">
-                <span>Time progression</span>
-                <output id="time-scrubber-label">Capture time</output>
-              </div>
-              <input
-                id="time-scrubber"
-                type="range"
-                min="-10080"
-                max="10080"
-                step="any"
-                value="0"
-                aria-label="Time offset from planned capture, plus or minus seven days"
-              />
-              <div class="time-scrubber-controls">
-                <button id="time-minus" type="button" aria-label="Move back one hour">
-                  −1 h
-                </button>
-                <button id="time-play" type="button" aria-pressed="false">
-                  Play
-                </button>
-                <button id="time-plus" type="button" aria-label="Move forward one hour">
-                  +1 h
-                </button>
-                <label for="time-speed">
-                  Rate
-                  <select id="time-speed">
-                    <option value="1">1 min/sec</option>
-                    <option value="10">10 min/sec</option>
-                    <option value="60" selected>1 hour/sec</option>
-                    <option value="360">6 hours/sec</option>
-                  </select>
-                </label>
-              </div>
-              <div class="time-scrubber-scale" aria-hidden="true">
-                <span>−7 days</span><span>Anchor</span><span>+7 days</span>
-              </div>
-            </div>
-            <fieldset class="preview-layer-controls" id="preview-layer-controls">
-              <legend>Preview layers</legend>
-              <label>
-                <input id="show-moons" type="checkbox" checked />
-                <span>Moons</span>
-              </label>
-              <label title="Labels are automatically hidden during playback">
-                <input id="show-moon-labels" type="checkbox" />
-                <span>Moon labels</span>
-              </label>
-            </fieldset>
-            <div class="coordinate-strip">
-              <label for="latitude">
-                Latitude
-                <span class="input-unit">
-                  <input
-                    id="latitude"
-                    type="number"
-                    min="-90"
-                    max="90"
-                    step="0.0001"
-                    value="34.0522"
-                  />
-                  <small>°</small>
-                </span>
-              </label>
-              <label for="longitude">
-                Longitude
-                <span class="input-unit">
-                  <input
-                    id="longitude"
-                    type="number"
-                    min="-180"
-                    max="180"
-                    step="0.0001"
-                    value="-118.2437"
-                  />
-                  <small>°</small>
-                </span>
-              </label>
-              <p class="location-status" id="location-status" role="status">
-                East-positive longitude
-              </p>
-            </div>
-          </section>
-
-          <div class="divider"></div>
-
-          <section class="control-section">
-            <div class="section-heading">
-              <span>02</span>
-              <div>
-                <h2>Choose imaging equipment</h2>
-                <p>Search a preset or edit any value manually.</p>
-              </div>
-            </div>
-            <div class="equipment-control-grid">
-              <label class="camera-control" for="camera">
-                Camera model
-                <input
-                  id="camera"
-                  type="text"
-                  list="camera-options"
-                  value="ZWO - ASI585MC/PRO"
-                  autocomplete="off"
-                />
-                <datalist id="camera-options"></datalist>
-              </label>
-              <label class="telescope-control" for="telescope">
-                Telescope model
-                <input
-                  id="telescope"
-                  type="text"
-                  list="telescope-options"
-                  value="Celestron - NexStar 8SE"
-                  autocomplete="off"
-                />
-                <datalist id="telescope-options"></datalist>
-              </label>
-              <label for="sensor-width">
-                Resolution width
-                <span class="input-unit">
-                  <input id="sensor-width" type="number" min="1" value="3840" />
-                  <small>px</small>
-                </span>
-              </label>
-              <label for="sensor-height">
-                Resolution height
-                <span class="input-unit">
-                  <input id="sensor-height" type="number" min="1" value="2160" />
-                  <small>px</small>
-                </span>
-              </label>
-              <label for="pixel-size">
-                Pixel size
-                <span class="input-unit">
-                  <input
-                    id="pixel-size"
-                    type="number"
-                    min="0.1"
-                    step="0.01"
-                    value="2.9"
-                  />
-                  <small>µm</small>
-                </span>
-              </label>
-              <label for="focal-length">
-                Telescope focal length
-                <span class="input-unit">
-                  <input
-                    id="focal-length"
-                    type="number"
-                    min="1"
-                    step="10"
-                    value="2032"
-                  />
-                  <small>mm</small>
-                </span>
-              </label>
-              <label for="optical-multiplier">
-                Barlow / flattener
-                <select id="optical-multiplier">
-                  <option value="0.63">0.63× reducer / flattener</option>
-                  <option value="0.7">0.70× reducer / flattener</option>
-                  <option value="0.8">0.80× reducer / flattener</option>
-                  <option value="0.85">0.85× reducer / flattener</option>
-                  <option value="1">1.00× none</option>
-                  <option value="1.5">1.50× Barlow</option>
-                  <option value="2" selected>2.00× Barlow</option>
-                  <option value="2.5">2.50× Barlow</option>
-                  <option value="3">3.00× Barlow</option>
-                  <option value="5">5.00× Barlow</option>
-                  <option value="custom">Custom multiplier…</option>
-                </select>
-              </label>
-              <label for="sensor-angle">
-                Camera rotation
-                <span class="input-unit">
-                  <input
-                    id="sensor-angle"
-                    type="number"
-                    min="-180"
-                    max="180"
-                    step="0.1"
-                    value="0"
-                  />
-                  <small>°</small>
-                </span>
-                <em id="sensor-angle-reference">
-                  Clockwise from zenith-up
-                </em>
-              </label>
-              <label
-                class="custom-multiplier"
-                id="custom-multiplier-wrap"
-                for="custom-multiplier"
-                hidden
-              >
-                Custom multiplier
-                <span class="input-unit">
-                  <input
-                    id="custom-multiplier"
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    value="1"
-                  />
-                  <small>×</small>
-                </span>
-              </label>
-              <p class="effective-focal">
-                Effective focal length
-                <strong id="effective-focal">4,064 mm</strong>
-              </p>
-              <p class="equipment-database-note" id="equipment-database-note">
-                379 cameras · 929 telescopes
-              </p>
-            </div>
-          </section>
-        </aside>
-
-        <section class="results-panel" id="results" aria-live="polite">
-          <div class="error-card pending-card" role="status">
-            <span>Loading calculator</span>
-            <p>Calculating the selected view…</p>
+      <article class="content-page" id="content" tabindex="-1">
+        <section class="content-intro" aria-labelledby="overview-title">
+          <p class="content-eyebrow">Technical overview</p>
+          <h2 id="overview-title">Planning, capture, and image reconstruction</h2>
+          <p>This project connects two parts of planetary imaging: a browser-based calculator for the geometry of an observation, and Planetary Studio, a native desktop application for acquiring and processing the recording. The calculator models what reaches the sensor. Planetary Studio calibrates, registers, ranks, integrates, and sharpens the recorded frames.</p>
+          <p>The desktop work began with native Apple silicon support for the Celestron NexImage 10, including raw GRBG Bayer capture over UVC. It has grown into a common processing workflow for macOS, Windows, and Linux, covering tasks conventionally distributed across oaCapture, PIPP, AutoStakkert, and waveSharp.</p>
+          <div class="content-actions">
+            <a class="content-button" href="./calculator.html">Open FOV calculator</a>
+            <a class="content-button secondary" href="./downloads.html">Download Planetary Studio</a>
           </div>
         </section>
-      </div>
 
+        <section class="content-section" aria-labelledby="geometry-title">
+          <div class="section-heading"><span>01</span><h2 id="geometry-title">Observing geometry and detector sampling</h2></div>
+          <div class="content-grid">
+            <div class="content-panel">
+              <h3>Calculate the projected observation</h3>
+              <p>The calculator combines observer coordinates, capture time, sensor dimensions, pixel pitch, effective focal length, and mount geometry. It predicts angular extent and diameter in pixels, illuminated phase, light-time-corrected central longitude, sub-Earth latitude, and pole position angle. Orthographic surface projections show the predicted Earth-facing hemisphere.</p>
+              <p>Alt-az previews follow the local vertical; equatorial previews follow celestial north. A camera rotation offset transforms the body, rings, and moons into sensor coordinates. The model also estimates alt-az field rotation and conservative recording windows, and displays major-moon positions and Jupiter transit predictions.</p>
+              <p>The equipment catalog supplies editable camera and telescope presets. These establish sampling and framing; seeing, focus, diffraction, tracking errors, and atmospheric dispersion remain separate constraints on the detail that can actually be recorded.</p>
+            </div>
+            <div class="content-panel">
+              <h3>Sampling relationships</h3>
+              <dl class="formula-list">
+                <div><dt>Effective focal length</dt><dd>f_eff = f_telescope × M</dd></div>
+                <div><dt>Image scale, arcseconds per pixel</dt><dd>s ≈ 206.264806 × p / f_eff</dd></div>
+                <div><dt>Horizontal field of view, radians</dt><dd>FOV_x = 2 arctan(N_x × p / (2000 × f_eff))</dd></div>
+                <div><dt>Apparent target diameter, pixels</dt><dd>D_px ≈ θ_arcsec / s</dd></div>
+              </dl>
+              <p class="content-note">Here p is pixel pitch in µm, focal lengths are in mm, N_x is the sensor width in pixels, M is the Barlow/reducer multiplier, and θ is the apparent angular diameter. The image-scale and pixel-diameter expressions use the small-angle approximation.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="content-section" aria-labelledby="pipeline-title">
+          <div class="section-heading"><span>02</span><h2 id="pipeline-title">The Planetary Studio processing pipeline</h2></div>
+          <div class="content-grid pipeline-grid">
+            <section class="content-panel">
+              <span class="content-step">01 / ACQUISITION</span>
+              <h3>Raw camera capture</h3>
+              <p>Record unsigned 8- or 16-bit Bayer, monochrome, or RGB frames in SER, preserving the native camera samples and timestamps. Resolution, color mode, bit depth, and frame rate are independent selectors constrained to advertised camera modes. Exposure and gain retain exact-value controls.</p>
+              <p>Live view can stop for a mode change while the camera remains connected. Incomplete UVC frames are counted and skipped; recording reports retain the stopping reason and any error.</p>
+            </section>
+            <section class="content-panel">
+              <span class="content-step">02 / PREPARATION</span>
+              <h3>Calibrate and select</h3>
+              <p>Read SER, common video formats, or image sequences. Apply dark/flat calibration, Bayer conversion, hot-pixel filtering, object centering, cropping, and optional brightness normalization. Trim an inclusive frame range and reject missing or clipped targets.</p>
+              <p>Gradient energy, Laplacian variance, Brenner contrast, and mean brightness offer different quality criteria. Prepared-frame views and limited sample stacks expose the effect of settings before a full run.</p>
+            </section>
+            <section class="content-panel">
+              <span class="content-step">03 / INTEGRATION</span>
+              <h3>Register and stack</h3>
+              <p>Estimate global subpixel translation from smoothed image structure, using phase-correlation proposals and intensity-based refinement. Overlapping local alignment patches accommodate local motion and can rank frames independently at each point.</p>
+              <p>Choose automatic or manual alignment points and a minimum brightness for automatic placement. Local contributions feather into the global stack. Shared global ranking avoids registering discarded frames; local ranking evaluates candidates for each patch.</p>
+            </section>
+            <section class="content-panel">
+              <span class="content-step">04 / RECONSTRUCTION</span>
+              <h3>Sharpen and export</h3>
+              <p>Adjust six wavelet scales and noise thresholds, then optionally apply Richardson–Lucy deconvolution. Bundled RGB and monochrome FFDNet models provide optional noise cleanup after sharpening, before channel balance, saturation, and gamma.</p>
+              <p>Processing retains floating-point precision through the finishing stages. Export 16-bit TIFF/PNG or floating-point FITS, save presets and projects, and reuse settings in the batch queue.</p>
+            </section>
+          </div>
+        </section>
+
+        <section class="content-section" aria-labelledby="engineering-title">
+          <div class="section-heading"><span>03</span><h2 id="engineering-title">Implementation and validation</h2></div>
+          <div class="content-grid">
+            <div class="content-panel">
+              <h3>A native application with an independent engine</h3>
+              <p>Planetary Studio uses Python, NumPy, SciPy, OpenCV, and a Qt desktop interface. A native libuvc/libusb bridge receives raw USB frames outside Python callbacks. Camera ownership and recording stay in a camera worker; processing runs separately from the interface event loop. The same engine is available from the command line.</p>
+              <p>SER recordings are memory mapped and read in passes. Internal pixels use normalized float32 and stack accumulation uses float64. Projects and processing reports are readable JSON; exports retain frame-selection and processing metadata. Recordings and model inference stay on the local machine.</p>
+              <p>Recent work corrected false translations driven by fixed sensor noise and square boundaries caused by local-patch normalization. Registration now validates smoothed structure and refines translation with enhanced correlation coefficient (ECC) optimization; coverage-weighted blending retains the patch taper.</p>
+            </div>
+            <div class="content-panel">
+              <h3>State the limits of the reconstruction</h3>
+              <p>Release gates include numerical, format, protocol, and desktop tests, followed by self-tests inside the packaged executables and extracted archives on all four supported platforms. Synthetic reference images check known subpixel motion, sharpness ranking, noise reduction, and export precision.</p>
+              <p>Hardware validation is narrower: NexImage 10 raw GRBG8 capture has been exercised on macOS 27 arm64. ZWO ASI, QHY, system-camera, INDI, and ASCOM Alpaca adapters are implemented, but adapter tests do not certify every camera, firmware, pixel format, or driver combination.</p>
+              <p>Planetary Studio remains a prerelease. It is independently implemented and has not established numerical or image-quality equivalence to AutoStakkert or waveSharp. Drizzle reconstruction, planetary rotational derotation, and GPU processing are not implemented. FFDNet was trained on general photographs; aggressive cleanup can suppress real planetary detail. Stacking and sharpening cannot recover focus or spatial information absent from the data.</p>
+              <p><a href="https://github.com/BrainBrian825/planetary-studio/blob/main/docs/validation.md">Validation and known limitations</a> · <a href="https://github.com/BrainBrian825/planetary-studio/blob/main/docs/cameras.md">Camera documentation</a></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="content-section content-panel archive-panel" aria-labelledby="source-title">
+          <div>
+            <h3 id="source-title">Source, release notes, and reproducible builds</h3>
+            <p>The public repository contains the processing engine, native camera bridge, model provenance, build workflow, and release history. Current platform packages and installation details are on the official download page.</p>
+          </div>
+          <a class="content-button secondary" href="https://github.com/BrainBrian825/planetary-studio">View GitHub repository</a>
+        </section>
+      </article>
       <footer>
-        <p>
-          Ephemerides by
-          <a
-            href="https://github.com/cosinekitty/astronomy"
-            target="_blank"
-            rel="noreferrer"
-            >Astronomy Engine</a
-          >
-          and
-          <a
-            href="https://ssd.jpl.nasa.gov/horizons/"
-            target="_blank"
-            rel="noreferrer"
-            >NASA/JPL Horizons</a
-          >. Equipment presets are community-sourced and should be checked
-          against current manufacturer specifications.
-        </p>
+        <nav class="content-footer-links" aria-label="Project resources">
+          <a href="./calculator.html">FOV calculator</a>
+          <a href="./downloads.html">Planetary Studio downloads</a>
+          <a href="https://github.com/BrainBrian825/planetary-studio">Source code on GitHub</a>
+          <a href="https://github.com/BrainBrian825/planetary-studio/issues">Report an issue</a>
+        </nav>
+        <p>Planetary Studio is open source under GPL-3.0-or-later. The calculator runs in your browser; the desktop application processes recordings locally.</p>
       </footer>
     </main>
-    <noscript>
-      <p class="noscript">This calculator needs JavaScript enabled.</p>
-    </noscript>
   </body>
 </html>
